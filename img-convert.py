@@ -1,5 +1,6 @@
 import os
 import sys
+import glob
 from typing import List
 
 from wand.image import Image
@@ -10,9 +11,12 @@ class ImageConverter:
     Manages image file conversions to other formats
     """
 
+    HEIC = '.heic'
     JPG = '.jpg'
     PNG = '.png'
     GIF = '.gif'
+
+    ALLOWED_EXTS = [HEIC, JPG, PNG, GIF]
 
     def __init__(self, files: List[str]):
         self.files = files
@@ -52,11 +56,18 @@ class ImageConverter:
 
 def validate_args():
     if len(sys.argv) < 2:
-        print(f"Usage: {__file__} <file1> [file2] [...]")
+        print(f"Usage: {__file__} <file1|directory1> [file2|directory2] [...]")
         exit(1)
 
-    # attempt to convert all files as arguments
-    files = [str(file) for file in sys.argv[1:]]
+    arg = sys.argv[1]
+    files = []
+    for arg in sys.argv[1:]:
+        if os.path.isfile(arg):
+            files.append(arg)
+        elif os.path.isdir(arg):
+            for ext in ImageConverter.ALLOWED_EXTS:
+                files_in_dir = glob.glob(os.path.join(arg, '*' + ext))
+                files.extend([file for file in files_in_dir])
     return files
 
 
@@ -67,4 +78,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
